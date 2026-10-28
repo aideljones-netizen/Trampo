@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>body{margin:0}[hidden]{display:none!important}</style>
+<title>Agenda do Salão</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: cabeçalho fixo com abas (Agenda, Serviços e equipe, Dashboard); conteúdo em coluna única de até 1040px. */
+:root {
+  --bg: #F6F4F7;
+  --surface: #FFFFFF;
+  --surface-2: #EFEBF1;
+  --ink: #241C28;
+  --muted: #6D6272;
+  --line: #E1DAE5;
+  --accent: #6B2D5C;
+  --accent-ink: #FFFFFF;
+  --good: #2E7D5B;
+  --warn: #9A6A12;
+  --bad: #B3344A;
+  --font-display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #161118; --surface: #211A24; --surface-2: #2B2330; --ink: #F1EAF3; --muted: #A89CAE;
+    --line: #3A3040; --accent: #D58BC3; --accent-ink: #1A1019; --good: #5CC596; --warn: #E0B04F; --bad: #F0768C;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #161118; --surface: #211A24; --surface-2: #2B2330; --ink: #F1EAF3; --muted: #A89CAE;
+  --line: #3A3040; --accent: #D58BC3; --accent-ink: #1A1019; --good: #5CC596; --warn: #E0B04F; --bad: #F0768C;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 48px; font-variant-numeric: tabular-nums;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap { max-width: 1040px; margin: 0 auto; }
+h1, h2, h3 { font-family: var(--font-display); margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* header */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding: 14px 0 10px; border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+.brand { font-family: var(--font-display); font-weight: 700; font-size: 22px; }
+.tabs { display: flex; gap: 4px; background: var(--surface-2); padding: 4px; border-radius: 10px; min-width: 0; }
+.tabs button { border: 0; background: transparent; padding: 7px 14px; border-radius: 7px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.tabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+
+main { padding-top: 20px; display: flex; flex-direction: column; gap: 20px; }
+.banner { background: color-mix(in srgb, var(--warn) 14%, var(--surface)); border: 1px solid color-mix(in srgb, var(--warn) 40%, var(--line)); border-radius: 10px; padding: 12px 14px; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; }
+.banner p { margin: 0; min-width: 0; flex: 1 1 320px; }
+
+/* buttons */
+.btn { border: 1px solid var(--line); background: var(--surface); padding: 8px 14px; border-radius: 8px; font-weight: 600; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.sm { padding: 5px 10px; font-size: 13px; }
+.btn.danger { color: var(--bad); }
+.btn.ghost { background: transparent; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* agenda */
+.dayhead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.daynav { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+.daynav h2 { font-size: 24px; text-transform: capitalize; min-width: 0; }
+.iconbtn { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-size: 18px; line-height: 1; padding: 0; }
+.week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.week button { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 8px 2px; display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.week .wd { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.week .dn { font-family: var(--font-display); font-weight: 700; font-size: 18px; }
+.week .ct { font-size: 12px; color: var(--muted); min-height: 16px; }
+.week button[aria-current="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.week button[aria-current="true"] .wd, .week button[aria-current="true"] .ct { color: var(--accent-ink); opacity: .85; }
+.week button.istoday .dn { text-decoration: underline; text-underline-offset: 3px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 7px; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--c, var(--muted)); flex: none; }
+.sum { color: var(--muted); }
+.sum b { color: var(--ink); }
+.list { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); overflow: hidden; }
+.appt { display: grid; grid-template-columns: 78px minmax(0, 1fr) auto; gap: 6px 14px; padding: 14px 16px; border-bottom: 1px solid var(--line); align-items: start; }
+.appt:last-child { border-bottom: 0; }
+.appt .time { font-family: var(--font-display); font-weight: 700; font-size: 20px; line-height: 1.1; }
+.appt .time small { display: block; font-family: var(--font-body); font-weight: 400; font-size: 12px; color: var(--muted); margin-top: 3px; }
+.appt .who { min-width: 0; overflow-wrap: anywhere; }
+.appt .who strong { font-size: 16px; }
+.appt .who span { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 14px; flex-wrap: wrap; }
+.appt .right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.appt .price { font-weight: 700; }
+.appt .acts { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
+.appt.off .who strong, .appt.off .time, .appt.off .price { opacity: .55; }
+.pill { font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; background: color-mix(in srgb, var(--p) 16%, transparent); color: var(--p); white-space: nowrap; }
+.st-agendado { --p: var(--accent); } .st-concluido { --p: var(--good); } .st-cancelado { --p: var(--muted); } .st-faltou { --p: var(--bad); }
+.empty { border: 1px dashed var(--line); border-radius: 12px; padding: 28px 18px; text-align: center; color: var(--muted); display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.empty p { margin: 0; max-width: 46ch; }
+
+/* services */
+.staffblock { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.staffhead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+.staffhead h3 { font-size: 20px; display: flex; align-items: center; gap: 9px; }
+.staffhead .meta { color: var(--muted); font-size: 14px; }
+.svc { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); align-items: center; }
+.svc:last-child { border-bottom: 0; }
+.svc .nm { font-weight: 600; overflow-wrap: anywhere; }
+.svc .det { color: var(--muted); font-size: 13px; grid-column: 1; }
+.svc .pr { text-align: right; font-weight: 700; }
+.svc .pr small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; }
+.svc .acts { grid-column: 1 / -1; display: flex; gap: 6px; flex-wrap: wrap; }
+.sec-title { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; }
+.sec-title h2 { font-size: 22px; }
+
+/* dashboard */
+.ranges { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
+.ranges label { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 3px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.kpi .l { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+.kpi .v { font-family: var(--font-display); font-weight: 700; font-size: 26px; line-height: 1.15; overflow-wrap: anywhere; }
+.kpi .s { font-size: 13px; color: var(--muted); }
+.kpi.hero { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.kpi.hero .l, .kpi.hero .s { color: var(--accent-ink); opacity: .85; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.panel h3 { font-size: 18px; }
+.panel .hint { margin: 0; color: var(--muted); font-size: 14px; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 640px; }
+th, td { padding: 10px 12px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); }
+th { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
+tfoot td { font-weight: 700; border-bottom: 0; }
+td .dot { display: inline-block; margin-right: 8px; }
+.cmp { display: flex; flex-direction: column; gap: 16px; }
+.cmp .row { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 6px 14px; align-items: center; }
+.cmp .nm { font-weight: 600; display: flex; align-items: center; gap: 8px; min-width: 0; }
+.bars { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.bar { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 8px; align-items: center; font-size: 13px; }
+.bar .track { height: 12px; background: var(--surface-2); border-radius: 3px; overflow: hidden; }
+.bar .fill { height: 100%; background: var(--c); border-radius: 3px; }
+.bar.soft .fill { opacity: .38; }
+.bar .val { text-align: right; font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; background: var(--c); }
+.legend i.soft { opacity: .38; }
+svg.chart { width: 100%; height: auto; display: block; }
+svg.chart text { fill: var(--muted); font-family: var(--font-body); font-size: 11px; }
+svg.chart .grid { stroke: var(--line); stroke-width: 1; }
+.two { display: grid; grid-template-columns: 1fr; gap: 20px; }
+.top-svc { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; }
+.top-svc .nm { font-weight: 600; display: flex; align-items: center; gap: 8px; overflow-wrap: anywhere; min-width: 0; }
+.top-svc .v { font-weight: 700; text-align: right; }
+.top-svc .track { grid-column: 1 / -1; height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; }
+.top-svc .fill { height: 100%; background: var(--c); }
+.top-svc .n { color: var(--muted); font-size: 13px; font-weight: 400; }
+.stack { display: flex; flex-direction: column; gap: 14px; }
+
+/* modal */
+.scrim { position: fixed; inset: 0; background: rgba(20, 12, 24, .55); z-index: 20; display: flex; align-items: flex-end; justify-content: center; padding: 0 0 env(safe-area-inset-bottom, 0px); }
+.sheet { background: var(--surface); width: 100%; max-width: 520px; max-height: 92%; overflow-y: auto; border-radius: 16px 16px 0 0; padding: 20px max(18px, env(safe-area-inset-left, 0px)) 22px; display: flex; flex-direction: column; gap: 14px; }
+.sheet h2 { font-size: 22px; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field.full { grid-column: 1 / -1; }
+.field label { font-size: 13px; font-weight: 600; color: var(--muted); }
+.field input, .field select, .ranges input { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; width: 100%; min-width: 0; }
+.ranges input { width: auto; }
+.field input[type="color"] { padding: 2px; height: 40px; }
+.formacts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+.warn { color: var(--warn); font-size: 14px; margin: 0; }
+.err { color: var(--bad); font-size: 14px; margin: 0; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 10px; z-index: 30; max-width: calc(100% - 32px); font-weight: 600; }
+
+@media (min-width: 720px) {
+  .two { grid-template-columns: 1fr 1fr; }
+  .scrim { align-items: center; padding: 20px; }
+  .sheet { border-radius: 16px; }
+}
+@media (max-width: 560px) {
+  .appt { grid-template-columns: 62px minmax(0, 1fr); }
+  .appt .right { grid-column: 2; align-items: flex-start; text-align: left; flex-direction: row; gap: 10px; align-items: center; }
+  .appt .acts { grid-column: 1 / -1; }
+  .cmp .row { grid-template-columns: 1fr; }
+  .grid2 { grid-template-columns: 1fr; }
+  .brand { font-size: 20px; }
+  .tabs { width: 100%; }
+  .tabs button { flex: 1; padding: 7px 6px; font-size: 14px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">Agenda do Salão</div>
+    <nav class="tabs" role="tablist" aria-label="Seções">
+      <button role="tab" data-tab="agenda" id="tab-agenda">Agenda</button>
+      <button role="tab" data-tab="servicos" id="tab-servicos">Serviços e equipe</button>
+      <button role="tab" data-tab="dashboard" id="tab-dashboard">Dashboard</button>
+    </nav>
+  </div>
+</header>
+<div class="wrap">
+  <main>
+    <div id="banners"></div>
+    <section id="view" aria-live="polite"><div class="empty"><p>Carregando a agenda…</p></div></section>
+  </main>
+</div>
+<div class="scrim" id="modal" hidden><div class="sheet" role="dialog" aria-modal="true" id="sheet"></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function () {
+  var BRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+  var CMP = new Intl.NumberFormat('pt-BR', { notation: 'compact', maximumFractionDigits: 1 });
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var pad = function (n) { return String(n).padStart(2, '0'); };
+  var ymd = function (d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
+  var parse = function (s) { var p = s.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); };
+  var addDays = function (s, n) { var d = parse(s); d.setDate(d.getDate() + n); return ymd(d); };
+  var today = function () { return ymd(new Date()); };
+  var WD = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+  var fmtLong = function (s) { return parse(s).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }); };
+  var fmtShort = function (s) { return parse(s).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }); };
+  var toMin = function (t) { var p = (t || '0:0').split(':').map(Number); return p[0] * 60 + p[1]; };
+  var fromMin = function (m) { return pad(Math.floor(m / 60) % 24) + ':' + pad(m % 60); };
+  var sum = function (a) { return a.reduce(function (x, y) { return x + y; }, 0); };
+  var newId = function () { return Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4); };
+  var STATUS = { agendado: 'Agendado', concluido: 'Concluído', cancelado: 'Cancelado', faltou: 'Faltou' };
+  var TABS = ['agenda', 'servicos', 'dashboard'];
+
+  var t0 = new Date();
+  var S = {
+    staff: [], services: [], appts: [], loaded: { staff: false, services: false, appointments: false },
+    tab: 'agenda', day: today(), sf: 'all', range: 'month',
+    from: ymd(new Date(t0.getFullYear(), t0.getMonth(), 1)), to: today(), dbOk: null
+  };
+  var db = null;
+
+  var staffById = function (id) { return S.staff.find(function (s) { return s.id === id; }); };
+  var colorOf = function (id) { var s = staffById(id); return s && s.color ? s.color : '#888888'; };
+  var nameOf = function (id) { var s = staffById(id); return s ? s.name : 'Profissional removida'; };
+  var commission = function (a) { return a.price * (a.comm || 0) / 100; };
+
+  /* ---------- storage ---------- */
+  function toast(msg) {
+    var t = $('#toast'); t.textContent = msg; t.hidden = false;
+    clearTimeout(toast.h); toast.h = setTimeout(function () { t.hidden = true; }, 3200);
+  }
+  var COL = { staff: 'staff', services: 'services', appts: 'appointments' };
+  async function put(key, id, data) {
+    try {
+      if (db) { await db.collection(COL[key]).doc(id).set(data); }
+      else {
+        var arr = S[key], i = arr.findIndex(function (x) { return x.id === id; });
+        var row = Object.assign({ id: id }, data);
+        if (i >= 0) arr[i] = row; else arr.push(row);
+        saveLocal(); render();
+      }
+      return true;
+    } catch (e) { toast('Não foi possível salvar. Tente de novo.'); return false; }
+  }
+  async function del(key, id) {
+    try {
+      if (db) { await db.collection(COL[key]).doc(id).delete(); }
+      else { S[key] = S[key].filter(function (x) { return x.id !== id; }); saveLocal(); render(); }
+      return true;
+    } catch (e) { toast('Não foi possível apagar. Tente de novo.'); return false; }
+  }
+  function strip(row) { var o = Object.assign({}, row); delete o.id; return o; }
+
+  /* ---------- helpers ---------- */
+  function statsFor(list) {
+    var done = list.filter(function (a) { return a.status === 'concluido'; });
+    var rev = sum(done.map(function (a) { return a.price; }));
+    var comm = sum(done.map(commission));
+    var cost = sum(done.map(function (a) { return a.cost || 0; }));
+    var lost = list.filter(function (a) { return a.status === 'cancelado' || a.status === 'faltou'; }).length;
+    return {
+      n: done.length, rev: rev, comm: comm, cost: cost, profit: rev - comm - cost,
+      avg: done.length ? rev / done.length : 0,
+      pending: sum(list.filter(function (a) { return a.status === 'agendado'; }).map(function (a) { return a.price; })),
+      lost: lost, total: list.length
+    };
+  }
+  function currentRange() {
+    var t = today(), d = parse(t), from, to;
+    if (S.range === 'today') { from = to = t; }
+    else if (S.range === '7') { from = addDays(t, -6); to = t; }
+    else if (S.range === 'month') { from = ymd(new Date(d.getFullYear(), d.getMonth(), 1)); to = ymd(new Date(d.getFullYear(), d.getMonth() + 1, 0)); }
+    else if (S.range === 'prev') { from = ymd(new Date(d.getFullYear(), d.getMonth() - 1, 1)); to = ymd(new Date(d.getFullYear(), d.getMonth(), 0)); }
+    else { from = S.from || t; to = S.to || t; if (from > to) { var x = from; from = to; to = x; } }
+    return { from: from, to: to };
+  }
+  function nice(v) {
+    if (v <= 0) return 100;
+    var p = Math.pow(10, Math.floor(Math.log10(v))), f = v / p;
+    var m = f <= 1 ? 1 : f <= 2 ? 2 : f <= 4 ? 4 : f <= 8 ? 8 : 10;
+    return m * p;
+  }
+  function arm(btn, fn) {
+    if (btn.dataset.armed) { fn(); return; }
+    btn.dataset.armed = '1'; btn.dataset.t = btn.textContent; btn.textContent = 'Confirmar?';
+    setTimeout(function () { if (btn.isConnected) { delete btn.dataset.armed; btn.textContent = btn.dataset.t; } }, 3000);
+  }
+
+  /* ---------- views ---------- */
+  function renderBanners() {
+    var h = '';
+    if (S.local) {
+      h += '<div class="banner"><p><b>Os dados ficam salvos só neste navegador.</b> Quem abrir o site em outro celular ou computador vê uma agenda separada. Limpar os dados do navegador apaga tudo.</p></div>';
+    } else if (S.dbOk === false) {
+      h += '<div class="banner"><p><b>Os dados não estão sendo salvos.</b> O navegador bloqueou o armazenamento, então o que você cadastrar some ao fechar a página. Tente abrir fora de uma aba anônima.</p></div>';
+    }
+    var hasEx = S.appts.some(function (a) { return a.example; }) || S.services.some(function (a) { return a.example; });
+    if (hasEx) {
+      h += '<div class="banner"><p><b>Dados de exemplo.</b> Os preços, custos e atendimentos abaixo são exemplos para você ver o painel funcionando. Ajuste os serviços na aba Serviços e equipe e apague os atendimentos de exemplo quando quiser.</p>' +
+        '<button class="btn sm" data-act="clear-examples">Apagar atendimentos de exemplo</button></div>';
+    }
+    $('#banners').innerHTML = h ? '<div class="stack">' + h + '</div>' : '';
+  }
+
+  function chipsHtml() {
+    var h = '<div class="chips"><button class="chip" data-act="sf" data-id="all" aria-pressed="' + (S.sf === 'all') + '">Todas</button>';
+    S.staff.forEach(function (s) {
+      h += '<button class="chip" data-act="sf" data-id="' + esc(s.id) + '" aria-pressed="' + (S.sf === s.id) + '"><span class="dot" style="--c:' + esc(s.color) + '"></span>' + esc(s.name) + '</button>';
+    });
+    return h + '</div>';
+  }
+
+  function viewAgenda() {
+    if (!S.staff.length) {
+      return '<div class="empty"><p>Comece cadastrando as profissionais do salão e os serviços que cada uma faz. Depois você agenda os atendimentos por aqui.</p><button class="btn primary" data-act="tab" data-id="servicos">Ir para Serviços e equipe</button></div>';
+    }
+    var day = S.day, dow = (parse(day).getDay() + 6) % 7, start = addDays(day, -dow), t = today();
+    var wk = '<div class="week">';
+    for (var i = 0; i < 7; i++) {
+      var d = addDays(start, i);
+      var c = S.appts.filter(function (a) { return a.date === d && a.status !== 'cancelado' && (S.sf === 'all' || a.staffId === S.sf); }).length;
+      wk += '<button data-act="day" data-id="' + d + '" aria-current="' + (d === day) + '" class="' + (d === t ? 'istoday' : '') + '" aria-label="' + esc(fmtLong(d)) + '">' +
+        '<span class="wd">' + WD[parse(d).getDay()] + '</span><span class="dn">' + parse(d).getDate() + '</span><span class="ct">' + (c ? c + ' at.' : '') + '</span></button>';
+    }
+    wk += '</div>';
+
+    var list = S.appts.filter(function (a) { return a.date === day && (S.sf === 'all' || a.staffId === S.sf); })
+      .sort(function (a, b) { return a.time.localeCompare(b.time); });
+    var live = list.filter(function (a) { return a.status === 'agendado' || a.status === 'concluido'; });
+    var total = sum(live.map(function (a) { return a.price; }));
+
+    var rows = list.map(function (a) {
+      var end = fromMin(toMin(a.time) + (a.dur || 30));
+      var off = (a.status === 'cancelado' || a.status === 'faltou') ? ' off' : '';
+      var acts = '';
+      if (a.status === 'agendado') {
+        acts += '<button class="btn sm primary" data-act="status" data-id="' + a.id + '" data-to="concluido">Concluir</button>' +
+          '<button class="btn sm" data-act="status" data-id="' + a.id + '" data-to="faltou">Faltou</button>' +
+          '<button class="btn sm" data-act="status" data-id="' + a.id + '" data-to="cancelado">Cancelar</button>';
+      } else {
+        acts += '<button class="btn sm" data-act="status" data-id="' + a.id + '" data-to="agendado">Reabrir</button>';
+      }
+      acts += '<button class="btn sm ghost" data-act="edit-appt" data-id="' + a.id + '">Editar</button>' +
+        '<button class="btn sm ghost danger" data-act="del-appt" data-id="' + a.id + '">Excluir</button>';
+      return '<article class="appt' + off + '"><div class="time">' + esc(a.time) + '<small>até ' + end + '</small></div>' +
+        '<div class="who"><strong>' + esc(a.client) + '</strong><span>' + esc(a.serviceName) + ' · <i class="dot" style="--c:' + esc(colorOf(a.staffId)) + '"></i>' + esc(nameOf(a.staffId)) + '</span>' +
+        (a.phone ? '<span>' + esc(a.phone) + '</span>' : '') + '</div>' +
+        '<div class="right"><span class="price">' + BRL.format(a.price) + '</span><span class="pill st-' + a.status + '">' + STATUS[a.status] + '</span></div>' +
+        '<div class="acts">' + acts + '</div></article>';
+    }).join('');
+
+    return '<div class="stack">' +
+      '<div class="dayhead"><div class="daynav"><button class="iconbtn" data-act="day-step" data-id="-1" aria-label="Dia anterior">‹</button>' +
+      '<h2>' + esc(fmtLong(day)) + '</h2><button class="iconbtn" data-act="day-step" data-id="1" aria-label="Próximo dia">›</button>' +
+      (day !== t ? '<button class="btn sm" data-act="day" data-id="' + t + '">Hoje</button>' : '') + '</div>' +
+      '<button class="btn primary" data-act="new-appt">Novo agendamento</button></div>' +
+      wk + chipsHtml() +
+      '<div class="sum"><b>' + live.length + '</b> ' + (live.length === 1 ? 'atendimento' : 'atendimentos') + ' no dia · <b>' + BRL.format(total) + '</b> em serviços</div>' +
+      (rows ? '<div class="list">' + rows + '</div>' :
+        '<div class="empty"><p>Nenhum atendimento neste dia' + (S.sf !== 'all' ? ' para ' + esc(nameOf(S.sf)) : '') + '. Toque em Novo agendamento para marcar o primeiro horário.</p></div>') +
+      '</div>';
+  }
+
+  function viewServicos() {
+    var blocks = S.staff.map(function (s) {
+      var svcs = S.services.filter(function (v) { return v.staffId === s.id; }).sort(function (a, b) { return a.name.localeCompare(b.name); });
+      var rows = svcs.map(function (v) {
+        var comm = v.price * (s.commission || 0) / 100, left = v.price - (v.cost || 0) - comm;
+        return '<div class="svc"><div class="nm">' + esc(v.name) + '</div><div class="pr">' + BRL.format(v.price) + '<small>sobra ' + BRL.format(left) + '</small></div>' +
+          '<div class="det">' + v.duration + ' min · material ' + BRL.format(v.cost || 0) + ' · comissão ' + BRL.format(comm) + '</div>' +
+          '<div class="acts"><button class="btn sm" data-act="edit-svc" data-id="' + v.id + '">Editar</button>' +
+          '<button class="btn sm ghost danger" data-act="del-svc" data-id="' + v.id + '">Excluir</button></div></div>';
+      }).join('');
+      return '<div class="staffblock"><div class="staffhead"><div><h3><span class="dot" style="--c:' + esc(s.color) + '"></span>' + esc(s.name) + '</h3>' +
+        '<div class="meta">' + esc(s.role || 'Profissional') + ' · comissão de ' + (s.commission || 0) + '%</div></div>' +
+        '<div class="chips"><button class="btn sm" data-act="edit-staff" data-id="' + s.id + '">Editar profissional</button>' +
+        '<button class="btn sm primary" data-act="new-svc" data-id="' + s.id + '">Novo serviço</button></div></div>' +
+        (rows || '<div class="svc"><div class="det">Nenhum serviço cadastrado para ' + esc(s.name) + '.</div></div>') + '</div>';
+    }).join('');
+    return '<div class="stack"><div class="sec-title"><h2>Serviços e equipe</h2><button class="btn" data-act="new-staff">Adicionar profissional</button></div>' +
+      '<p class="hint" style="margin:0;color:var(--muted)">O valor que “sobra” é o preço menos o material e a comissão da profissional. É a base do lucro no Dashboard.</p>' +
+      (blocks || '<div class="empty"><p>Nenhuma profissional cadastrada ainda.</p><button class="btn primary" data-act="new-staff">Adicionar profissional</button></div>') + '</div>';
+  }
+
+  function dailyChart(list, from, to) {
+    var days = Math.round((parse(to) - parse(from)) / 864e5) + 1, byMonth = days > 62;
+    var keys = [], idx = {};
+    if (byMonth) {
+      var d = parse(from); d = new Date(d.getFullYear(), d.getMonth(), 1);
+      while (ymd(d) <= to) { var k = ymd(d).slice(0, 7); idx[k] = keys.length; keys.push(k); d = new Date(d.getFullYear(), d.getMonth() + 1, 1); }
+    } else {
+      for (var i = 0; i < days; i++) { var k2 = addDays(from, i); idx[k2] = keys.length; keys.push(k2); }
+    }
+    var data = keys.map(function () { return {}; });
+    list.forEach(function (a) {
+      if (a.status !== 'concluido') return;
+      var k = byMonth ? a.date.slice(0, 7) : a.date; if (idx[k] == null) return;
+      data[idx[k]][a.staffId] = (data[idx[k]][a.staffId] || 0) + a.price;
+    });
+    var totals = data.map(function (o) { return sum(Object.keys(o).map(function (x) { return o[x]; })); });
+    var max = nice(Math.max.apply(null, totals.concat([0])));
+    var W = 720, H = 240, L = 46, R = 6, T = 10, B = 26, iw = W - L - R, ih = H - T - B, n = keys.length;
+    var slot = iw / n, bw = Math.min(slot * 0.72, 56);
+    var svg = '<svg class="chart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Receita por ' + (byMonth ? 'mês' : 'dia') + ', empilhada por profissional">';
+    for (var g = 0; g <= 4; g++) {
+      var y = T + ih - ih * g / 4;
+      svg += '<line class="grid" x1="' + L + '" x2="' + (W - R) + '" y1="' + y + '" y2="' + y + '"/><text x="' + (L - 6) + '" y="' + (y + 4) + '" text-anchor="end">' + (g === 0 ? '0' : CMP.format(max * g / 4)) + '</text>';
+    }
+    var step = Math.ceil(n / 10);
+    keys.forEach(function (k, i) {
+      var x = L + slot * i + (slot - bw) / 2, yb = T + ih;
+      var label = byMonth ? parse(k + '-01').toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }) : fmtShort(k);
+      S.staff.forEach(function (s) {
+        var v = data[i][s.id]; if (!v) return;
+        var h = ih * v / max; yb -= h;
+        svg += '<rect x="' + x.toFixed(1) + '" y="' + yb.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + esc(s.color) + '"><title>' + esc(label + ' · ' + s.name + ': ' + BRL.format(v)) + '</title></rect>';
+      });
+      if (i % step === 0) svg += '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle">' + esc(label) + '</text>';
+    });
+    svg += '</svg>';
+    return { svg: svg, byMonth: byMonth, any: totals.some(function (v) { return v > 0; }) };
+  }
+
+  function viewDashboard() {
+    var r = currentRange();
+    var list = S.appts.filter(function (a) { return a.date >= r.from && a.date <= r.to; });
+    var all = statsFor(list);
+    var presets = [['today', 'Hoje'], ['7', 'Últimos 7 dias'], ['month', 'Este mês'], ['prev', 'Mês passado'], ['custom', 'Personalizado']];
+    var rangeHtml = '<div class="ranges"><div class="chips">' + presets.map(function (p) {
+      return '<button class="chip" data-act="range" data-id="' + p[0] + '" aria-pressed="' + (S.range === p[0]) + '">' + p[1] + '</button>';
+    }).join('') + '</div>' + (S.range === 'custom' ?
+      '<label for="r-from">De<input type="date" id="r-from" value="' + S.from + '"></label><label for="r-to">Até<input type="date" id="r-to" value="' + S.to + '"></label>' : '') + '</div>';
+    var period = fmtShort(r.from) + (r.from !== r.to ? ' a ' + fmtShort(r.to) : '') + '/' + parse(r.to).getFullYear();
+
+    var head = '<div class="sec-title"><h2>Dashboard</h2><span class="sum">Período: <b>' + period + '</b></span></div>' + rangeHtml;
+    if (!S.staff.length) return '<div class="stack">' + head + '<div class="empty"><p>Cadastre as profissionais e os serviços para ver o desempenho de cada uma.</p></div></div>';
+
+    var margin = all.rev ? Math.round(all.profit / all.rev * 100) : 0;
+    var lostPct = all.total ? Math.round(all.lost / all.total * 100) : 0;
+    var kpis = '<div class="kpis">' +
+      '<div class="kpi hero"><span class="l">Receita</span><span class="v">' + BRL.format(all.rev) + '</span><span class="s">atendimentos concluídos</span></div>' +
+      '<div class="kpi"><span class="l">Lucro do salão</span><span class="v">' + BRL.format(all.profit) + '</span><span class="s">margem de ' + margin + '%</span></div>' +
+      '<div class="kpi"><span class="l">Atendimentos</span><span class="v">' + all.n + '</span><span class="s">concluídos</span></div>' +
+      '<div class="kpi"><span class="l">Ticket médio</span><span class="v">' + BRL.format(all.avg) + '</span><span class="s">por atendimento</span></div>' +
+      '<div class="kpi"><span class="l">A receber</span><span class="v">' + BRL.format(all.pending) + '</span><span class="s">ainda agendado</span></div>' +
+      '<div class="kpi"><span class="l">Faltas e cancelamentos</span><span class="v">' + all.lost + '</span><span class="s">' + lostPct + '% dos agendamentos</span></div></div>';
+
+    if (!all.n) {
+      return '<div class="stack">' + head + kpis + '<div class="empty"><p>Nenhum atendimento concluído neste período. Na Agenda, toque em Concluir quando o atendimento terminar e os números aparecem aqui.</p></div></div>';
+    }
+
+    var per = S.staff.map(function (s) { return { s: s, st: statsFor(list.filter(function (a) { return a.staffId === s.id; })) }; });
+    var best = per.slice().sort(function (a, b) { return b.st.rev - a.st.rev; })[0];
+    var bestProfit = per.slice().sort(function (a, b) { return b.st.profit - a.st.profit; })[0];
+    var share = all.rev ? Math.round(best.st.rev / all.rev * 100) : 0;
+    var insight = best.st.rev > 0 ? '<b>' + esc(best.s.name) + '</b> lidera a receita, com ' + share + '% do total' +
+      (bestProfit.s.id !== best.s.id ? '; o maior lucro para o salão vem de <b>' + esc(bestProfit.s.name) + '</b>' : ', e também gera o maior lucro para o salão') + '.' : '';
+
+    var rows = per.map(function (p) {
+      var st = p.st;
+      return '<tr><td><span class="dot" style="--c:' + esc(p.s.color) + '"></span>' + esc(p.s.name) + '</td><td>' + st.n + '</td><td>' + BRL.format(st.rev) + '</td><td>' + BRL.format(st.comm) + '</td><td>' + BRL.format(st.cost) + '</td><td><b>' + BRL.format(st.profit) + '</b></td><td>' + BRL.format(st.avg) + '</td><td>' + st.lost + '</td></tr>';
+    }).join('');
+    var table = '<div class="panel"><h3>Desempenho por profissional</h3><div class="scroll"><table><thead><tr><th>Profissional</th><th>Atend.</th><th>Receita</th><th>Comissão</th><th>Material</th><th>Lucro do salão</th><th>Ticket médio</th><th>Faltas e canc.</th></tr></thead><tbody>' + rows +
+      '</tbody><tfoot><tr><td>Total</td><td>' + all.n + '</td><td>' + BRL.format(all.rev) + '</td><td>' + BRL.format(all.comm) + '</td><td>' + BRL.format(all.cost) + '</td><td>' + BRL.format(all.profit) + '</td><td>' + BRL.format(all.avg) + '</td><td>' + all.lost + '</td></tr></tfoot></table></div>' +
+      (insight ? '<p class="hint">' + insight + '</p>' : '') + '</div>';
+
+    var maxRev = Math.max.apply(null, per.map(function (p) { return p.st.rev; }).concat([1]));
+    var cmp = '<div class="panel"><h3>Receita e lucro de cada uma</h3><div class="legend"><span><i class="soft" style="--c:var(--ink)"></i>Receita</span><span><i style="--c:var(--ink)"></i>Lucro do salão</span></div><div class="cmp">' + per.map(function (p) {
+      return '<div class="row"><div class="nm"><span class="dot" style="--c:' + esc(p.s.color) + '"></span>' + esc(p.s.name) + '</div><div class="bars">' +
+        '<div class="bar soft" style="--c:' + esc(p.s.color) + '"><div class="track"><div class="fill" style="width:' + (p.st.rev / maxRev * 100).toFixed(1) + '%"></div></div><span class="val">' + BRL.format(p.st.rev) + '</span></div>' +
+        '<div class="bar" style="--c:' + esc(p.s.color) + '"><div class="track"><div class="fill" style="width:' + (Math.max(p.st.profit, 0) / maxRev * 100).toFixed(1) + '%"></div></div><span class="val">' + BRL.format(p.st.profit) + '</span></div>' +
+        '</div></div>';
+    }).join('') + '</div></div>';
+
+    var ch = dailyChart(list, r.from, r.to);
+    var daily = '<div class="panel"><h3>Receita por ' + (ch.byMonth ? 'mês' : 'dia') + '</h3><div class="legend">' + S.staff.map(function (s) { return '<span><i style="--c:' + esc(s.color) + '"></i>' + esc(s.name) + '</span>'; }).join('') + '</div>' + ch.svg + '</div>';
+
+    var agg = {};
+    list.forEach(function (a) {
+      if (a.status !== 'concluido') return;
+      var k = a.staffId + '|' + a.serviceName; agg[k] = agg[k] || { name: a.serviceName, staffId: a.staffId, n: 0, rev: 0 };
+      agg[k].n++; agg[k].rev += a.price;
+    });
+    var top = Object.keys(agg).map(function (k) { return agg[k]; }).sort(function (a, b) { return b.rev - a.rev; }).slice(0, 6);
+    var topMax = top.length ? top[0].rev : 1;
+    var tops = '<div class="panel"><h3>Serviços que mais faturam</h3><div class="stack">' + top.map(function (t) {
+      return '<div class="top-svc" style="--c:' + esc(colorOf(t.staffId)) + '"><div class="nm"><span class="dot"></span>' + esc(t.name) + ' <span class="n">· ' + t.n + 'x</span></div><div class="v">' + BRL.format(t.rev) + '</div><div class="track"><div class="fill" style="width:' + (t.rev / topMax * 100).toFixed(1) + '%"></div></div></div>';
+    }).join('') + '</div></div>';
+
+    return '<div class="stack">' + head + kpis + table + '<div class="two">' + cmp + tops + '</div>' + daily + '</div>';
+  }
+
+  function render() {
+    var ready = S.dbOk === false || (S.loaded.staff && S.loaded.services && S.loaded.appointments);
+    TABS.forEach(function (t) { var b = $('#tab-' + t); b.setAttribute('aria-selected', String(S.tab === t)); b.tabIndex = S.tab === t ? 0 : -1; });
+    renderBanners();
+    if (!ready) return;
+    var v = $('#view');
+    v.innerHTML = S.tab === 'agenda' ? viewAgenda() : S.tab === 'servicos' ? viewServicos() : viewDashboard();
+  }
+
+  /* ---------- modal ---------- */
+  function openModal(html) {
+    $('#sheet').innerHTML = html; $('#modal').hidden = false;
+    var f = $('#sheet input, #sheet select'); if (f) f.focus();
+  }
+  function closeModal() { $('#modal').hidden = true; $('#sheet').innerHTML = ''; }
+  var val = function (id) { var e = $('#' + id); return e ? e.value.trim() : ''; };
+  var opt = function (v, label, sel) { return '<option value="' + esc(v) + '"' + (sel ? ' selected' : '') + '>' + esc(label) + '</option>'; };
+
+  function openAppt(id) {
+    var a = id ? S.appts.find(function (x) { return x.id === id; }) : null;
+    if (!S.staff.length) { toast('Cadastre uma profissional primeiro.'); return; }
+    var staffId = a ? a.staffId : (S.sf !== 'all' ? S.sf : S.staff[0].id);
+    var svcs = S.services.filter(function (v) { return v.staffId === staffId; });
+    var svcId = a ? a.serviceId : (svcs[0] && svcs[0].id);
+    var price = a ? a.price : (svcs[0] ? svcs[0].price : '');
+    openModal('<h2>' + (a ? 'Editar agendamento' : 'Novo agendamento') + '</h2><form id="f-appt" class="stack" data-id="' + (a ? a.id : '') + '"><div class="grid2">' +
+      '<div class="field full"><label for="f-client">Cliente</label><input id="f-client" value="' + esc(a ? a.client : '') + '" autocomplete="off"></div>' +
+      '<div class="field full"><label for="f-phone">Telefone (opcional)</label><input id="f-phone" type="tel" value="' + esc(a ? a.phone : '') + '"></div>' +
+      '<div class="field"><label for="f-date">Data</label><input id="f-date" type="date" value="' + (a ? a.date : S.day) + '"></div>' +
+      '<div class="field"><label for="f-time">Horário</label><input id="f-time" type="time" step="900" value="' + (a ? a.time : '09:00') + '"></div>' +
+      '<div class="field"><label for="f-staff">Profissional</label><select id="f-staff">' + S.staff.map(function (s) { return opt(s.id, s.name + ' · ' + (s.role || ''), s.id === staffId); }).join('') + '</select></div>' +
+      '<div class="field"><label for="f-svc">Serviço</label><select id="f-svc">' + (svcs.length ? svcs.map(function (v) { return opt(v.id, v.name, v.id === svcId); }).join('') : '<option value="">Nenhum serviço cadastrado</option>') + '</select></div>' +
+      '<div class="field full"><label for="f-price">Valor cobrado (R$)</label><input id="f-price" type="number" inputmode="decimal" min="0" step="0.01" value="' + price + '"></div></div>' +
+      '<p class="err" id="f-err" hidden></p><p class="warn" id="f-warn" hidden></p>' +
+      '<div class="formacts"><button type="button" class="btn" data-act="close">Cancelar</button><button type="submit" class="btn primary" id="f-save">Salvar</button></div></form>');
+  }
+  function fillServices() {
+    var sid = val('f-staff'), svcs = S.services.filter(function (v) { return v.staffId === sid; });
+    $('#f-svc').innerHTML = svcs.length ? svcs.map(function (v, i) { return opt(v.id, v.name, i === 0); }).join('') : '<option value="">Nenhum serviço cadastrado</option>';
+    $('#f-price').value = svcs[0] ? svcs[0].price : '';
+  }
+  async function saveAppt(form) {
+    var id = form.dataset.id, old = id ? S.appts.find(function (x) { return x.id === id; }) : null;
+    var err = $('#f-err'), warn = $('#f-warn'); err.hidden = true;
+    var client = val('f-client'), date = val('f-date'), time = val('f-time'), staffId = val('f-staff'), svcId = val('f-svc'), price = parseFloat(val('f-price'));
+    var svc = S.services.find(function (v) { return v.id === svcId; }), st = staffById(staffId);
+    var msg = !client ? 'Informe o nome da cliente.' : !date ? 'Escolha a data.' : !time ? 'Escolha o horário.' : !svc ? 'Escolha um serviço. Se a lista está vazia, cadastre o serviço na aba Serviços e equipe.' : !(price >= 0) ? 'Informe o valor cobrado.' : '';
+    if (msg) { err.textContent = msg; err.hidden = false; return; }
+    var s0 = toMin(time), e0 = s0 + (svc.duration || 30);
+    var clash = S.appts.filter(function (x) { return x.id !== id && x.staffId === staffId && x.date === date && (x.status === 'agendado' || x.status === 'concluido') && s0 < toMin(x.time) + (x.dur || 30) && toMin(x.time) < e0; });
+    if (clash.length && !form.dataset.ack) {
+      form.dataset.ack = '1'; warn.hidden = false;
+      warn.textContent = nameOf(staffId) + ' já tem atendimento nesse horário (' + clash[0].time + ', ' + clash[0].client + '). Toque em Salvar de novo para manter assim mesmo.';
+      return;
+    }
+    var doc = {
+      date: date, time: time, client: client, phone: val('f-phone'), staffId: staffId, serviceId: svc.id, serviceName: svc.name, dur: svc.duration || 30,
+      price: price, cost: old && old.serviceId === svc.id ? (old.cost || 0) : (svc.cost || 0),
+      comm: old && old.staffId === staffId ? (old.comm || 0) : (st.commission || 0), status: old ? old.status : 'agendado'
+    };
+    $('#f-save').disabled = true;
+    var ok = await put('appts', id || newId(), doc);
+    if (ok) { S.day = date; closeModal(); render(); toast(old ? 'Agendamento atualizado' : 'Agendamento salvo'); } else { $('#f-save').disabled = false; }
+  }
+
+  function openSvc(id, staffId) {
+    var v = id ? S.services.find(function (x) { return x.id === id; }) : null;
+    var sid = v ? v.staffId : staffId;
+    openModal('<h2>' + (v ? 'Editar serviço' : 'Novo serviço') + '</h2><form id="f-svc-form" class="stack" data-id="' + (v ? v.id : '') + '"><div class="grid2">' +
+      '<div class="field full"><label for="s-name">Nome do serviço</label><input id="s-name" value="' + esc(v ? v.name : '') + '" autocomplete="off"></div>' +
+      '<div class="field full"><label for="s-staff">Profissional</label><select id="s-staff">' + S.staff.map(function (s) { return opt(s.id, s.name, s.id === sid); }).join('') + '</select></div>' +
+      '<div class="field"><label for="s-price">Preço (R$)</label><input id="s-price" type="number" inputmode="decimal" min="0" step="0.01" value="' + (v ? v.price : '') + '"></div>' +
+      '<div class="field"><label for="s-cost">Custo de material (R$)</label><input id="s-cost" type="number" inputmode="decimal" min="0" step="0.01" value="' + (v ? v.cost || 0 : 0) + '"></div>' +
+      '<div class="field full"><label for="s-dur">Duração (minutos)</label><input id="s-dur" type="number" inputmode="numeric" min="5" step="5" value="' + (v ? v.duration : 60) + '"></div></div>' +
+      '<p class="err" id="f-err" hidden></p><div class="formacts"><button type="button" class="btn" data-act="close">Cancelar</button><button type="submit" class="btn primary" id="f-save">Salvar</button></div></form>');
+  }
+  async function saveSvc(form) {
+    var id = form.dataset.id, err = $('#f-err');
+    var name = val('s-name'), price = parseFloat(val('s-price')), cost = parseFloat(val('s-cost') || '0'), dur = parseInt(val('s-dur'), 10);
+    var msg = !name ? 'Informe o nome do serviço.' : !(price >= 0) ? 'Informe o preço.' : !(cost >= 0) ? 'O custo de material não pode ser negativo.' : !(dur > 0) ? 'Informe a duração em minutos.' : '';
+    if (msg) { err.textContent = msg; err.hidden = false; return; }
+    $('#f-save').disabled = true;
+    var ok = await put('services', id || newId(), { name: name, staffId: val('s-staff'), price: price, cost: cost, duration: dur });
+    if (ok) { closeModal(); render(); } else { $('#f-save').disabled = false; }
+  }
+
+  function openStaff(id) {
+    var s = id ? staffById(id) : null;
+    openModal('<h2>' + (s ? 'Editar profissional' : 'Nova profissional') + '</h2><form id="f-staff-form" class="stack" data-id="' + (s ? s.id : '') + '"><div class="grid2">' +
+      '<div class="field full"><label for="p-name">Nome</label><input id="p-name" value="' + esc(s ? s.name : '') + '" autocomplete="off"></div>' +
+      '<div class="field full"><label for="p-role">Especialidade</label><input id="p-role" value="' + esc(s ? s.role : '') + '" placeholder="Ex.: Cabelo, Unhas, Sobrancelhas"></div>' +
+      '<div class="field"><label for="p-comm">Comissão (%)</label><input id="p-comm" type="number" inputmode="decimal" min="0" max="100" step="1" value="' + (s ? s.commission || 0 : 40) + '"></div>' +
+      '<div class="field"><label for="p-color">Cor nos gráficos</label><input id="p-color" type="color" value="' + esc(s ? s.color : '#1F9D8F') + '"></div></div>' +
+      '<p class="hint" style="margin:0;color:var(--muted);font-size:14px">A comissão vale para os próximos agendamentos. Os já feitos mantêm a comissão da época.</p>' +
+      '<p class="err" id="f-err" hidden></p><div class="formacts"><button type="button" class="btn" data-act="close">Cancelar</button><button type="submit" class="btn primary" id="f-save">Salvar</button></div></form>');
+  }
+  async function saveStaff(form) {
+    var id = form.dataset.id, err = $('#f-err'), name = val('p-name'), comm = parseFloat(val('p-comm') || '0');
+    var msg = !name ? 'Informe o nome.' : !(comm >= 0 && comm <= 100) ? 'A comissão deve ficar entre 0 e 100.' : '';
+    if (msg) { err.textContent = msg; err.hidden = false; return; }
+    $('#f-save').disabled = true;
+    var ok = await put('staff', id || newId(), { name: name, role: val('p-role'), commission: comm, color: val('p-color') });
+    if (ok) { closeModal(); render(); } else { $('#f-save').disabled = false; }
+  }
+
+  /* ---------- events ---------- */
+  function setTab(t) { if (TABS.indexOf(t) < 0) t = 'agenda'; S.tab = t; if (location.hash !== '#' + t) location.hash = t; render(); window.scrollTo(0, 0); }
+  window.addEventListener('hashchange', function () { var t = location.hash.slice(1); if (TABS.indexOf(t) >= 0 && t !== S.tab) { S.tab = t; render(); } });
+
+  document.addEventListener('click', function (e) {
+    if (e.target.id === 'modal') { closeModal(); return; }
+    var b = e.target.closest('[data-act], [data-tab]'); if (!b) return;
+    if (b.dataset.tab) { setTab(b.dataset.tab); return; }
+    var act = b.dataset.act, id = b.dataset.id;
+    if (act === 'tab') setTab(id);
+    else if (act === 'close') closeModal();
+    else if (act === 'day') { S.day = id; render(); }
+    else if (act === 'day-step') { S.day = addDays(S.day, parseInt(id, 10)); render(); }
+    else if (act === 'sf') { S.sf = id; render(); }
+    else if (act === 'range') { S.range = id; render(); }
+    else if (act === 'new-appt') openAppt();
+    else if (act === 'edit-appt') openAppt(id);
+    else if (act === 'status') {
+      var a = S.appts.find(function (x) { return x.id === id; });
+      if (a) put('appts', id, Object.assign(strip(a), { status: b.dataset.to })).then(function (ok) { if (ok && b.dataset.to === 'concluido') toast('Atendimento concluído'); });
+    }
+    else if (act === 'del-appt') arm(b, function () { del('appts', id); });
+    else if (act === 'new-svc') openSvc(null, id);
+    else if (act === 'edit-svc') openSvc(id);
+    else if (act === 'del-svc') arm(b, function () { del('services', id); });
+    else if (act === 'new-staff') openStaff();
+    else if (act === 'edit-staff') openStaff(id);
+    else if (act === 'clear-examples') arm(b, async function () {
+      var ex = S.appts.filter(function (a) { return a.example; });
+      for (var i = 0; i < ex.length; i++) { if (!(await del('appts', ex[i].id))) break; }
+      toast('Atendimentos de exemplo apagados');
+    });
+  });
+  document.addEventListener('submit', function (e) {
+    e.preventDefault(); var f = e.target;
+    if (f.id === 'f-appt') saveAppt(f); else if (f.id === 'f-svc-form') saveSvc(f); else if (f.id === 'f-staff-form') saveStaff(f);
+  });
+  document.addEventListener('change', function (e) {
+    var id = e.target.id;
+    if (id === 'f-staff') { fillServices(); }
+    else if (id === 'f-svc') { var v = S.services.find(function (x) { return x.id === e.target.value; }); if (v) $('#f-price').value = v.price; }
+    else if (id === 'r-from') { S.from = e.target.value; render(); }
+    else if (id === 'r-to') { S.to = e.target.value; render(); }
+    if (id === 'f-date' || id === 'f-time' || id === 'f-staff' || id === 'f-svc') { var f = $('#f-appt'); if (f) { delete f.dataset.ack; $('#f-warn').hidden = true; } }
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('#modal').hidden) closeModal(); });
+
+  /* ---------- armazenamento no navegador (versão para GitHub Pages) ---------- */
+  var LS_KEY = 'agenda-salao-v1';
+  function saveLocal() {
+    if (!S.local) return;
+    try { localStorage.setItem(LS_KEY, JSON.stringify({ staff: S.staff, services: S.services, appts: S.appts })); }
+    catch (e) { toast('Não foi possível salvar neste navegador.'); }
+  }
+  function startLocal() {
+    var data = null;
+    try { S.local = true; var raw = localStorage.getItem(LS_KEY); if (raw) data = JSON.parse(raw); }
+    catch (e) { S.local = false; }
+    if (!data) {
+      data = {
+        staff: [
+          { id: 'st_cab', name: 'Cabeleireira', role: 'Cabelo', commission: 40, color: '#C2410C' },
+          { id: 'st_nail', name: 'Nail Designer', role: 'Unhas', commission: 45, color: '#0E7C86' },
+          { id: 'st_sob', name: 'Designer de Sobrancelhas', role: 'Sobrancelhas', commission: 50, color: '#7C3AED' }
+        ],
+        services: [
+          { id: 'sv_c1', name: 'Corte feminino', staffId: 'st_cab', price: 90, cost: 5, duration: 60 },
+          { id: 'sv_c2', name: 'Escova', staffId: 'st_cab', price: 70, cost: 5, duration: 45 },
+          { id: 'sv_c3', name: 'Coloração', staffId: 'st_cab', price: 220, cost: 70, duration: 150 },
+          { id: 'sv_c4', name: 'Hidratação', staffId: 'st_cab', price: 120, cost: 25, duration: 60 },
+          { id: 'sv_n1', name: 'Manicure em gel', staffId: 'st_nail', price: 80, cost: 12, duration: 60 },
+          { id: 'sv_n2', name: 'Alongamento em gel', staffId: 'st_nail', price: 190, cost: 45, duration: 120 },
+          { id: 'sv_n3', name: 'Pedicure', staffId: 'st_nail', price: 70, cost: 8, duration: 60 },
+          { id: 'sv_s1', name: 'Design de sobrancelhas', staffId: 'st_sob', price: 50, cost: 3, duration: 30 },
+          { id: 'sv_s2', name: 'Design com henna', staffId: 'st_sob', price: 70, cost: 8, duration: 45 },
+          { id: 'sv_s3', name: 'Brow lamination', staffId: 'st_sob', price: 160, cost: 30, duration: 60 }
+        ],
+        appts: []
+      };
+    }
+    S.staff = data.staff || []; S.services = data.services || []; S.appts = data.appts || [];
+    S.dbOk = false; S.loaded = { staff: true, services: true, appointments: true };
+    render();
+  }
+
+  /* ---------- boot ---------- */
+  var h0 = location.hash.slice(1); if (TABS.indexOf(h0) >= 0) S.tab = h0;
+  render();
+
+  function subscribe(key, col) {
+    db.collection(col).onSnapshot(function (snap) {
+      S[key] = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
+      S.loaded[col] = true; render();
+    }, function () { S.dbOk = false; render(); });
+  }
+  (window.claude && window.claude.use ? window.claude.use('db') : Promise.resolve(null)).then(function (d) {
+    if (!d) { startLocal(); return; }
+    db = d; S.dbOk = true;
+    subscribe('staff', 'staff'); subscribe('services', 'services'); subscribe('appts', 'appointments');
+  }, function () { startLocal(); });
+})();
+</script>
+</body>
+</html>
